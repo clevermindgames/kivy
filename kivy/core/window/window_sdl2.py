@@ -204,7 +204,7 @@ class WindowSDL(WindowBase):
     def _set_allow_screensaver(self, *args):
         self._win.set_allow_screensaver(self.allow_screensaver)
 
-    def _event_filter(self, action, *largs):
+    def _event_filter(self, action):
         from kivy.app import App
         if action == 'app_terminating':
             EventLoop.quit = True
@@ -237,12 +237,6 @@ class WindowSDL(WindowBase):
                 app = App.get_running_app()
                 app.dispatch('on_resume')
 
-        elif action == 'windowresized':
-            self._size = largs
-            self._win.resize_window(*self._size)
-            # Force kivy to render the frame now, so that the canvas is drawn.
-            EventLoop.idle()
-
         return 0
 
     def create_window(self, *largs):
@@ -258,6 +252,7 @@ class WindowSDL(WindowBase):
                            "borderless Config option instead.")
 
         if not self.initialized:
+
             if self.position == 'auto':
                 pos = None, None
             elif self.position == 'custom':
@@ -326,8 +321,7 @@ class WindowSDL(WindowBase):
 
     def close(self):
         self._win.teardown_window()
-        super(WindowSDL, self).close()
-        self.initialized = False
+        self.dispatch('on_close')
 
     def maximize(self):
         if self._is_desktop:
@@ -683,8 +677,16 @@ class WindowSDL(WindowBase):
 
     def _do_resize(self, dt):
         Logger.debug('Window: Resize window to %s' % str(self.size))
+        try:
+            from quadropoly_base import desk
+            if desk.orientation == 'horizontal':
+                self.size = max(self.size), min(self.size)      
+            elif desk.orientation == 'vertical':
+                self.size = min(self.size), max(self.size)
+        except:
+            pass
         self._win.resize_window(*self._size)
-        self.dispatch('on_pre_resize', *self.size)
+        self.dispatch('on_resize', *self.size)
 
     def do_pause(self):
         # should go to app pause mode (desktop style)
