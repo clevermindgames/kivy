@@ -1266,7 +1266,10 @@ class TextInput(FocusBehavior, Widget):
         self.scroll_x = scrl_x
         self.scroll_y = scrl_y
         # handle undo and redo for delete selection
-        self._set_unredo_delsel(a, b, v[a:b], from_undo)
+        try:
+            self._set_unredo_delsel(a, b, v[a:b], from_undo)
+        except:
+            pass
         self.cancel_selection()
 
     def _set_unredo_delsel(self, a, b, substring, from_undo):
