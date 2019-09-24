@@ -1248,7 +1248,7 @@ class TextInput(FocusBehavior, Widget):
         if not self._selection:
             return
         v = self._get_text(encode=False)
-        a, b = self._selection_from, self._selection_to
+        a, b = int(self._selection_from), int(self._selection_to)
         if a > b:
             a, b = b, a
         self.cursor = cursor = self.get_cursor_from_index(a)
@@ -2086,7 +2086,7 @@ class TextInput(FocusBehavior, Widget):
         miny = self.y + padding_bottom
         maxy = _top - padding_top
         draw_selection = self._draw_selection
-        a, b = self._selection_from, self._selection_to
+        a, b = int(self._selection_from), int(self._selection_to)
         if a > b:
             a, b = b, a
         get_cursor_from_index = self.get_cursor_from_index
