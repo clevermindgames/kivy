@@ -1284,7 +1284,7 @@ class TextInput(FocusBehavior, Widget):
         '''Update selection text and order of from/to if finished is True.
         Can be called multiple times until finished is True.
         '''
-        a, b = self._selection_from, self._selection_to
+        a, b = int(self._selection_from), int(self._selection_to)
         if a > b:
             a, b = b, a
         self._selection_finished = finished
