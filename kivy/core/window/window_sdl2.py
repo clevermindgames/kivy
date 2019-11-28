@@ -224,6 +224,7 @@ class WindowSDL(WindowBase):
                 Logger.info(
                     'WindowSDL: App doesn\'t support pause mode, stop.')
                 stopTouchApp()
+                self.close()
                 return 0
 
             self._pause_loop = True
@@ -701,6 +702,7 @@ class WindowSDL(WindowBase):
         if not app.dispatch('on_pause'):
             Logger.info('WindowSDL: App doesn\'t support pause mode, stop.')
             stopTouchApp()
+            self.close()
             return
 
         # XXX FIXME wait for sdl resume
