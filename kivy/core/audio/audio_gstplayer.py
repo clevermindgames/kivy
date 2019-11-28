@@ -69,7 +69,8 @@ class SoundGstplayer(Sound):
         super(SoundGstplayer, self).play()
 
     def stop(self):
-        self.player.stop()
+        if self.player:
+            self.player.stop()
         super(SoundGstplayer, self).stop()
 
     def unload(self):
