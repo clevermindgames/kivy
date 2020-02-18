@@ -224,6 +224,7 @@ class WindowSDL(WindowBase):
                 Logger.info(
                     'WindowSDL: App doesn\'t support pause mode, stop.')
                 stopTouchApp()
+                self.close()
                 return 0
 
             self._pause_loop = True
@@ -677,6 +678,7 @@ class WindowSDL(WindowBase):
 
     def _do_resize(self, dt):
         Logger.debug('Window: Resize window to %s' % str(self.size))
+        """
         try:
             from quadropoly_base import desk
             if desk.orientation == 'horizontal':
@@ -685,6 +687,7 @@ class WindowSDL(WindowBase):
                 self.size = min(self.size), max(self.size)
         except:
             pass
+        """
         self._win.resize_window(*self._size)
         self.dispatch('on_resize', *self.size)
 
@@ -701,6 +704,7 @@ class WindowSDL(WindowBase):
         if not app.dispatch('on_pause'):
             Logger.info('WindowSDL: App doesn\'t support pause mode, stop.')
             stopTouchApp()
+            self.close()
             return
 
         # XXX FIXME wait for sdl resume
