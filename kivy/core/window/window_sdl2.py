@@ -31,14 +31,20 @@ from kivy.utils import platform, deprecated
 from kivy.compat import unichr
 from collections import deque
 
-KMOD_LCTRL = 64
-KMOD_RCTRL = 128
-KMOD_RSHIFT = 2
-KMOD_LSHIFT = 1
-KMOD_RALT = 512
-KMOD_LALT = 256
-KMOD_LMETA = 1024
-KMOD_RMETA = 2048
+
+# SDL_keycode.h, https://wiki.libsdl.org/SDL_Keymod
+KMOD_NONE = 0x0000
+KMOD_LSHIFT = 0x0001
+KMOD_RSHIFT = 0x0002
+KMOD_LCTRL = 0x0040
+KMOD_RCTRL = 0x0080
+KMOD_LALT = 0x0100
+KMOD_RALT = 0x0200
+KMOD_LGUI = 0x0400
+KMOD_RGUI = 0x0800
+KMOD_NUM = 0x1000
+KMOD_CAPS = 0x2000
+KMOD_MODE = 0x4000
 
 SDLK_SHIFTL = 1073742049
 SDLK_SHIFTR = 1073742053
@@ -58,7 +64,7 @@ SDLK_SUPER = 1073742051
 SDLK_CAPS = 1073741881
 SDLK_INSERT = 1073741897
 SDLK_KEYPADNUM = 1073741907
-SDLK_KP_DEVIDE = 1073741908
+SDLK_KP_DIVIDE = 1073741908
 SDLK_KP_MULTIPLY = 1073741909
 SDLK_KP_MINUS = 1073741910
 SDLK_KP_PLUS = 1073741911
@@ -139,9 +145,10 @@ class WindowSDL(WindowBase):
         self._win = _WindowSDL2Storage()
         super(WindowSDL, self).__init__()
         self._mouse_x = self._mouse_y = -1
-        self._meta_keys = (KMOD_LCTRL, KMOD_RCTRL, KMOD_RSHIFT,
-            KMOD_LSHIFT, KMOD_RALT, KMOD_LALT, KMOD_LMETA,
-            KMOD_RMETA)
+        self._meta_keys = (
+            KMOD_LCTRL, KMOD_RCTRL, KMOD_RSHIFT,
+            KMOD_LSHIFT, KMOD_RALT, KMOD_LALT, KMOD_LGUI,
+            KMOD_RGUI, KMOD_NUM, KMOD_CAPS, KMOD_MODE)
         self.command_keys = {
                     27: 'escape',
                     9: 'tab',
@@ -168,7 +175,7 @@ class WindowSDL(WindowBase):
                         SDLK_F6: 287, SDLK_F7: 288, SDLK_F8: 289, SDLK_F9: 290,
                         SDLK_F10: 291, SDLK_F11: 292, SDLK_F12: 293,
                         SDLK_F13: 294, SDLK_F14: 295, SDLK_F15: 296,
-                        SDLK_KEYPADNUM: 300, SDLK_KP_DEVIDE: 267,
+                        SDLK_KEYPADNUM: 300, SDLK_KP_DIVIDE: 267,
                         SDLK_KP_MULTIPLY: 268, SDLK_KP_MINUS: 269,
                         SDLK_KP_PLUS: 270, SDLK_KP_ENTER: 271,
                         SDLK_KP_DOT: 266, SDLK_KP_0: 256, SDLK_KP_1: 257,
@@ -204,7 +211,7 @@ class WindowSDL(WindowBase):
     def _set_allow_screensaver(self, *args):
         self._win.set_allow_screensaver(self.allow_screensaver)
 
-    def _event_filter(self, action):
+    def _event_filter(self, action, *largs):
         from kivy.app import App
         if action == 'app_terminating':
             EventLoop.quit = True
@@ -224,6 +231,7 @@ class WindowSDL(WindowBase):
                 Logger.info(
                     'WindowSDL: App doesn\'t support pause mode, stop.')
                 stopTouchApp()
+                self.close()
                 return 0
 
             self._pause_loop = True
@@ -468,6 +476,8 @@ class WindowSDL(WindowBase):
             if not self._pause_loop:
                 break
             event = self._win.poll()
+            if event is False:
+                continue
             if event is None:
                 continue
             # As dropfile is send was the app is still in pause.loop
@@ -756,22 +766,30 @@ class WindowSDL(WindowBase):
         if mods is not None:
             if mods & (KMOD_RSHIFT | KMOD_LSHIFT):
                 modifiers.add('shift')
-            if mods & (KMOD_RALT | KMOD_LALT):
+            if mods & (KMOD_RALT | KMOD_LALT | KMOD_MODE):
                 modifiers.add('alt')
             if mods & (KMOD_RCTRL | KMOD_LCTRL):
                 modifiers.add('ctrl')
-            if mods & (KMOD_RMETA | KMOD_LMETA):
+            if mods & (KMOD_RGUI | KMOD_LGUI):
                 modifiers.add('meta')
+            if mods & KMOD_NUM:
+                modifiers.add('numlock')
+            if mods & KMOD_CAPS:
+                modifiers.add('capslock')
 
-        if key is not None:
+         if key is not None:
             if key in (KMOD_RSHIFT, KMOD_LSHIFT):
                 modifiers.add('shift')
-            if key in (KMOD_RALT, KMOD_LALT):
+            if key in (KMOD_RALT, KMOD_LALT, KMOD_MODE):
                 modifiers.add('alt')
             if key in (KMOD_RCTRL, KMOD_LCTRL):
                 modifiers.add('ctrl')
-            if key in (KMOD_RMETA, KMOD_LMETA):
+            if key in (KMOD_RGUI, KMOD_LGUI):
                 modifiers.add('meta')
+            if key == KMOD_NUM:
+                modifiers.add('numlock')
+            if key == KMOD_CAPS:
+                modifiers.add('capslock')
 
         self._modifiers = list(modifiers)
         return
