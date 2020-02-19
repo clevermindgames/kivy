@@ -13,7 +13,7 @@ TODO:
 
 '''
 
-__all__ = ('WindowSDL2', )
+__all__ = ('WindowSDL', )
 
 from os.path import join
 import sys
